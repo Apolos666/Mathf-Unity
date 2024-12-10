@@ -6,44 +6,33 @@ using UnityEngine;
 public class BoucingLaser : MonoBehaviour
 {
     public int maxBounce = 5;
-    public int currentBounce = 0;
-    private Stack<Vector2> directions = new Stack<Vector2>();
-    private Stack<Vector2> hitPoints = new Stack<Vector2>();
-    public bool IsRunning = false;
-    public Dictionary<Vector2, Vector2> bounceData = new Dictionary<Vector2, Vector2>();
     
     private void OnDrawGizmos()
     {
         var origin = transform.position;
         var direction = transform.right;
-        Gizmos.color = Color.green;
-        Gizmos.DrawLine(origin, origin + direction);
-        directions.Push(direction);
-        hitPoints.Push(origin);
+        var ray = new Ray2D(origin, direction);
 
-        while (currentBounce < maxBounce)
+        for (var i = 0; i < maxBounce; i++)
         {
-            var inCommingDirection = directions.Pop();
-            var hitPoint = hitPoints.Pop();
-            
-            var hit = Physics2D.Raycast(hitPoint + inCommingDirection * 0.05f, inCommingDirection);
+            Gizmos.color = Color.white;
+            Gizmos.DrawLine(ray.origin, ray.origin + ray.direction);
+            var hit = Physics2D.Raycast(ray.origin + ray.direction * 0.05f, ray.direction);
 
             if (hit)
             {
-                currentBounce++;
-                hitPoints.Push(hit.point);
+                var vectorReflection = VectorReflect(ray.direction, hit.normal);
+                Gizmos.color = Color.red;
+                Gizmos.DrawSphere(hit.point, 0.1f);
+                Gizmos.DrawLine(hit.point, hit.point + vectorReflection);
+                
+                ray.origin = hit.point;
+                ray.direction = vectorReflection;
             }
-        
-            var vectorReflection = VectorReflect(inCommingDirection, hit.normal);
-            directions.Push(vectorReflection);
-            
-            bounceData.Add(hit.point, vectorReflection);
-        }
-
-        foreach (var key in bounceData.Keys)
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawLine(key, key + bounceData[key]);
+            else
+            {
+                break;
+            }
         }
     }
     
