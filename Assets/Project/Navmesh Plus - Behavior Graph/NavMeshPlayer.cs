@@ -17,8 +17,6 @@ public class NavMeshPlayer : MonoBehaviour
         var mouseScreenPosition = Input.mousePosition;
         var mouseWorldPosition = Camera.main.ScreenToWorldPoint(mouseScreenPosition);
         
-        Debug.Log(mouseWorldPosition);
-                
         if (Input.GetMouseButtonDown(0))
         {
             _agent.SetDestination((Vector2)mouseWorldPosition);
